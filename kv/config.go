@@ -4,10 +4,15 @@ import "time"
 
 type Configuration struct {
 	BackupInterval time.Duration
-	FileName       string
+	Storage        Storage
+}
+
+var DefaultConfig = Configuration{
+	BackupInterval: time.Duration(time.Second),
+	Storage:        &NotImplementedStorage{},
 }
 
 type configuration struct {
 	backupInterval time.Duration
-	fileName       string
+	storage        Storage
 }

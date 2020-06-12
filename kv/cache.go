@@ -1,16 +1,13 @@
 package kv
 
 import (
-	"crypto/rand"
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"sync"
 	"time"
 )
 
-type ttlBox struct {
+type TtlBox struct {
 	CreatedAt time.Time
 	Expired   *time.Time
 	Value     T
@@ -23,13 +20,13 @@ type T struct {
 type Cache struct {
 	config configuration
 	mu     sync.RWMutex
-	values map[string]ttlBox
+	values map[string]TtlBox
 }
 
 func NewCache(config Configuration) *Cache {
 	c := &Cache{
 		mu:     sync.RWMutex{},
-		values: make(map[string]ttlBox),
+		values: make(map[string]TtlBox),
 	}
 	c.configure(config)
 	c.startCleaner(time.Second)
@@ -39,33 +36,19 @@ func NewCache(config Configuration) *Cache {
 func (c *Cache) configure(config Configuration) {
 	c.config = configuration{}
 
-	if config.FileName != "" {
-		c.config.fileName = config.FileName
-		c.restore()
+	if config.Storage == nil {
+		c.config.storage = &NotImplementedStorage{}
 	} else {
-		b := make([]byte, 6)
-		if _, err := rand.Read(b); err != nil {
-			log.Println(err)
-		}
-		c.config.fileName = fmt.Sprintf("snapshot_%x.json", b)
+		c.config.storage = config.Storage
+	}
+
+	if err := c.config.storage.RestoreInto(&c.values); err != nil {
+		log.Println(err)
 	}
 
 	if config.BackupInterval != 0 {
 		c.config.backupInterval = config.BackupInterval
 		c.startAutoBackup()
-	}
-}
-
-func (c *Cache) restore() {
-	f, err := os.OpenFile(c.config.fileName, os.O_RDONLY, 0666)
-	if err != nil {
-		log.Printf("%v - initiated a new cache\n", err)
-		return
-	}
-	defer f.Close()
-
-	if err = json.NewDecoder(f).Decode(&c.values); err != nil {
-		log.Printf("%v - initiated a new cache\n", err)
 	}
 }
 
@@ -99,22 +82,13 @@ func (c *Cache) startAutoBackup() {
 
 func (c *Cache) makeSnapshot() {
 	c.mu.RLock()
-	data, err := json.Marshal(c.values)
+	// make copy
+	mapCopy := make(map[string]TtlBox, len(c.values))
+	for k, v := range c.values {
+		mapCopy[k] = v
+	}
 	c.mu.RUnlock()
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	f, err := os.OpenFile(c.config.fileName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0666)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-	defer f.Close()
-
-	log.Printf("file <= %s", data)
-	if _, err := f.Write(data); err != nil {
+	if err := c.config.storage.Save(mapCopy); err != nil {
 		log.Println(err)
 	}
 }
@@ -185,7 +159,7 @@ func (c *Cache) add(key string, value T, ttl *time.Time) bool {
 	if _, ok := c.values[key]; ok {
 		return false
 	}
-	c.values[key] = ttlBox{
+	c.values[key] = TtlBox{
 		CreatedAt: time.Now(),
 		Expired:   ttl,
 		Value:     value,

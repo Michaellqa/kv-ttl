@@ -3,6 +3,7 @@ package kv
 import (
 	"fmt"
 	"io/ioutil"
+	"kv-ttl/repository"
 	"os"
 	"reflect"
 	"regexp"
@@ -20,9 +21,13 @@ func TestCacheBackup(t *testing.T) {
 		}
 	}
 
-	cache := NewCache(Configuration{
+	fileStorage := repository.NewFileRepo("snap.json")
+	config := Configuration{
 		BackupInterval: 1 * time.Second,
-	})
+		Storage:        fileStorage,
+	}
+
+	cache := NewCache(config)
 	values := []T{
 		{V: "one"},
 		{V: "two"},
@@ -38,18 +43,8 @@ func TestCacheBackup(t *testing.T) {
 
 	time.Sleep(10 * time.Second)
 
-	// find backup file
-	files, _ = ioutil.ReadDir(".")
-	var backupFile string
-	for _, f := range files {
-		if rx.MatchString(f.Name()) {
-			backupFile = f.Name()
-			return
-		}
-	}
-
 	newCache := NewCache(Configuration{
-		FileName: backupFile,
+		Storage: fileStorage,
 	})
 	storedValues := newCache.GetAll()
 	if !reflect.DeepEqual(values, storedValues) {
