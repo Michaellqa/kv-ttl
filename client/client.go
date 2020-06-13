@@ -1,3 +1,4 @@
+// The client demonstrates how to connect to grpc server and call the cache methods
 package main
 
 import (
@@ -8,6 +9,7 @@ import (
 	"kv-ttl/kv"
 	"kv-ttl/pb"
 	"log"
+	"time"
 )
 
 func main() {
@@ -38,22 +40,24 @@ func main() {
 		fmt.Printf("#1: %v\n", resp.Value)
 	}
 
-	stream, err := cl.GetAll(ctx, &pb.Empty{})
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	var values []kv.T
 	for {
-		value, err := stream.Recv()
-		if err == io.EOF {
-			break
-		}
+		stream, err := cl.GetAll(ctx, &pb.Empty{})
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			return
 		}
-		values = append(values, kv.T{V: value.Value})
+		var values []kv.T
+		for {
+			value, err := stream.Recv()
+			if err == io.EOF {
+				break
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
+			values = append(values, kv.T{V: value.Value})
+		}
+		fmt.Printf("#all: %v", values)
+		time.Sleep(2 * time.Second)
 	}
-	fmt.Printf("#all: %v", values)
 }

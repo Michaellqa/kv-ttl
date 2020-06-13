@@ -10,7 +10,7 @@ import (
 type TtlBox struct {
 	CreatedAt time.Time
 	Expired   *time.Time
-	Value     T
+	Content   T
 }
 
 type T struct {
@@ -82,7 +82,6 @@ func (c *Cache) startAutoBackup() {
 
 func (c *Cache) makeSnapshot() {
 	c.mu.RLock()
-	// make copy
 	mapCopy := make(map[string]TtlBox, len(c.values))
 	for k, v := range c.values {
 		mapCopy[k] = v
@@ -103,7 +102,7 @@ func (c *Cache) Get(key string) (T, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	value, ok := c.values[key]
-	return value.Value, ok
+	return value.Content, ok
 }
 
 func (c *Cache) GetAll() []T {
@@ -111,7 +110,7 @@ func (c *Cache) GetAll() []T {
 	defer c.mu.RUnlock()
 	results := make([]T, 0, len(c.values))
 	for _, b := range c.values {
-		results = append(results, b.Value)
+		results = append(results, b.Content)
 	}
 	return results
 }
@@ -162,7 +161,7 @@ func (c *Cache) add(key string, value T, ttl *time.Time) bool {
 	c.values[key] = TtlBox{
 		CreatedAt: time.Now(),
 		Expired:   ttl,
-		Value:     value,
+		Content:   value,
 	}
 	return true
 }

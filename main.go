@@ -16,6 +16,8 @@ import (
 type Foo func() int
 
 func main() {
+	log.SetFlags(log.Flags() | log.Lshortfile)
+
 	port := 80
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
