@@ -24,8 +24,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+	//host := "db"
+	host := "localhost"
 	connection := postgres.Connection{
-		Host:     "db",
+		Host:     host,
 		Port:     5432,
 		User:     "postgres",
 		Password: "postgres",

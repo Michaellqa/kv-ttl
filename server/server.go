@@ -13,6 +13,7 @@ const (
 	duplicate = "duplicate"
 )
 
+// cacheServer implements StorageServer interface. Maps cache methods to server methods.
 type cacheServer struct {
 	cache *kv.Cache
 }

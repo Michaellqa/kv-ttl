@@ -40,7 +40,7 @@ func (p *Repository) RestoreInto(m *map[string]kv.TtlBox) error {
 	return nil
 }
 
-// Save clears the table and then inserts new values.
+// Save deletes all the values from the database table and then inserts the new values.
 func (p *Repository) Save(m map[string]kv.TtlBox) error {
 	_, err := p.db.Exec(`delete from cache_snapshot where true`)
 	if err != nil {
@@ -62,7 +62,8 @@ func (p *Repository) Save(m map[string]kv.TtlBox) error {
 	return nil
 }
 
-// For reasons that I don't know the code below doesn't work.
+// For reasons that I don't know the code below fails to execute the copy statement
+// with an error: "unexpected message type 0x51 during COPY from stdin".
 // Origins are taken from https://godoc.org/github.com/lib/pq#hdr-Bulk_imports.
 //
 // Save clears the table and then inserts new values.
@@ -103,15 +104,15 @@ func (p *Repository) Save(m map[string]kv.TtlBox) error {
 //}
 
 // Helper structure used to serialize into and deserialize original values
-// from Postgres JSONB type
+// from Postgres JSONB type.
 type jsonValue kv.TtlBox
 
-// Values makes the jsonValue type implement the driver.Valuer interface
+// Values makes the jsonValue type implement the driver.Valuer interface.
 func (v jsonValue) Value() (driver.Value, error) {
 	return json.Marshal(v)
 }
 
-// Scan makes the jsonValue type implement the sql.Scanner interface
+// Scan makes the jsonValue type implement the sql.Scanner interface.
 func (v *jsonValue) Scan(value interface{}) error {
 	bts, ok := value.([]byte)
 	if !ok {

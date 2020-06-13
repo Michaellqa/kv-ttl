@@ -2,17 +2,8 @@ package kv
 
 import "time"
 
+// Configuration defines set of parameters to configure a cache.
 type Configuration struct {
 	BackupInterval time.Duration
 	Storage        Storage
-}
-
-var DefaultConfig = Configuration{
-	BackupInterval: time.Duration(time.Second),
-	Storage:        &NotImplementedStorage{},
-}
-
-type configuration struct {
-	backupInterval time.Duration
-	storage        Storage
 }

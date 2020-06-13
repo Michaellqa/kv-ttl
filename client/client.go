@@ -40,6 +40,7 @@ func main() {
 		fmt.Printf("#1: %v\n", resp.Value)
 	}
 
+	// monitors all the values in cache
 	for {
 		stream, err := cl.GetAll(ctx, &pb.Empty{})
 		if err != nil {
@@ -57,7 +58,7 @@ func main() {
 			}
 			values = append(values, kv.T{V: value.Value})
 		}
-		fmt.Printf("#all: %v", values)
-		time.Sleep(2 * time.Second)
+		fmt.Printf("#all: %v\n", values)
+		time.Sleep(5 * time.Second)
 	}
 }
