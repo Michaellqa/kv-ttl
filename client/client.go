@@ -27,16 +27,23 @@ func main() {
 	resp, err := cl.Get(ctx, &pb.Key{Key: "0"})
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Printf("#0: %v\n", resp.Value)
 	}
-	fmt.Printf("#0: %v\n", resp.Value)
 
 	resp, err = cl.Get(ctx, &pb.Key{Key: "1"})
 	if err != nil {
 		log.Println(err)
+	} else {
+		fmt.Printf("#1: %v\n", resp.Value)
 	}
-	fmt.Printf("#1: %v\n", resp.Value)
 
 	stream, err := cl.GetAll(ctx, &pb.Empty{})
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	var values []kv.T
 	for {
 		value, err := stream.Recv()
