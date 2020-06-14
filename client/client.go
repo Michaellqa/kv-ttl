@@ -45,11 +45,11 @@ func main() {
 		Value: pbt("Five"),
 		Ttl:   ptypes.DurationProto(3500 * time.Millisecond)})
 
-	// Get existing and nonexistent values
-	resp, err := cl.Get(ctx, pbk("5"))
+	// Value existing and nonexistent values
+	resp, err := cl.Value(ctx, pbk("5"))
 	assertedPrint("Five", resp, err)
 
-	resp, err = cl.Get(ctx, pbk("6"))
+	resp, err = cl.Value(ctx, pbk("6"))
 	assertedPrint("#6 error not_found", resp, err)
 
 	// Wait until ttl is ended but wasn't swept yet
@@ -67,9 +67,9 @@ func main() {
 	fmt.Println("\nexpected: One Three Four")
 	printAll(cl)
 
-	// Get time since value was added
+	// Value time since value was added
 	time.Sleep(2 * time.Second)
-	alive, err := cl.GetTtl(ctx, pbk("1"))
+	alive, err := cl.TimeAlive(ctx, pbk("1"))
 	assertedPrint("#1 alive ~ 6.6 sec", alive, err)
 
 	// Wait until values with ttl are dead.
@@ -94,10 +94,10 @@ func assertedPrint(expected string, v interface{}, err error) {
 	}
 }
 
-// printAll calls GetAll method and prints all the values
+// printAll calls ListAll method and prints all the values
 func printAll(cl pb.StorageClient) {
 	ctx := context.Background()
-	stream, err := cl.GetAll(ctx, &pb.Empty{})
+	stream, err := cl.ListAll(ctx, &pb.Empty{})
 	if err != nil {
 		log.Println(err)
 		return

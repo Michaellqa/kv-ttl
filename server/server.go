@@ -30,27 +30,6 @@ func (c *cacheServer) Add(ctx context.Context, r *pb.KeyValue) (*pb.Empty, error
 	return &pb.Empty{}, nil
 }
 
-func (c *cacheServer) Get(ctx context.Context, r *pb.Key) (*pb.T, error) {
-	value, ok := c.cache.Get(r.Key)
-	if !ok {
-		return &pb.T{Value: value.V}, fmt.Errorf(notFound)
-	}
-	return &pb.T{Value: value.V}, nil
-}
-
-func (c *cacheServer) GetAll(req *pb.Empty, stream pb.Storage_GetAllServer) error {
-	for _, v := range c.cache.GetAll() {
-		if err := stream.Send(&pb.T{Value: v.V}); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (c *cacheServer) Remove(ctx context.Context, req *pb.Key) (*pb.Empty, error) {
-	c.cache.Remove(req.Key)
-	return nil, nil
-}
 func (c *cacheServer) AddWithTtl(ctx context.Context, req *pb.KeyValueTtl) (*pb.Empty, error) {
 	dur, err := ptypes.Duration(req.Ttl)
 	if err != nil {
@@ -62,13 +41,37 @@ func (c *cacheServer) AddWithTtl(ctx context.Context, req *pb.KeyValueTtl) (*pb.
 	}
 	return &pb.Empty{}, nil
 }
-func (c *cacheServer) GetTtl(ctx context.Context, req *pb.Key) (*pb.TtlResponse, error) {
-	dur, ok := c.cache.GetTtl(req.Key)
+
+func (c *cacheServer) Value(ctx context.Context, r *pb.Key) (*pb.T, error) {
+	value, ok := c.cache.Value(r.Key)
+	if !ok {
+		return &pb.T{Value: value.V}, fmt.Errorf(notFound)
+	}
+	return &pb.T{Value: value.V}, nil
+}
+
+func (c *cacheServer) ListAll(req *pb.Empty, stream pb.Storage_ListAllServer) error {
+	for _, v := range c.cache.ListAll() {
+		if err := stream.Send(&pb.T{Value: v.V}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *cacheServer) Remove(ctx context.Context, req *pb.Key) (*pb.Empty, error) {
+	c.cache.Remove(req.Key)
+	return nil, nil
+}
+
+func (c *cacheServer) TimeAlive(ctx context.Context, req *pb.Key) (*pb.TtlResponse, error) {
+	dur, ok := c.cache.TimeAlive(req.Key)
 	if !ok {
 		return &pb.TtlResponse{}, fmt.Errorf(notFound)
 	}
 	return &pb.TtlResponse{Ttl: ptypes.DurationProto(dur)}, nil
 }
+
 func (c *cacheServer) SetTtl(ctx context.Context, req *pb.TtlRequest) (*pb.Empty, error) {
 	t, err := ptypes.Timestamp(req.Stamp)
 	if err != nil {

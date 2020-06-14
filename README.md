@@ -24,7 +24,7 @@ The cache server can be started by running the command: `docker-compose up`.
 It will boot up a container with postgres database, build and run the image for the cache server.
 
 You can also look up inside the database using the web interface 
-provided by "adminer" tool if you visit `localhost:80` in your browser.
+provided by "adminer" tool if you visit `localhost:8080` in your browser.
 
 ### Client
 There is a client application that connects to the server and sends a few simple calls to the server.

@@ -5,21 +5,13 @@ package pb;
 import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
-// func (c *Cache) Add(key string, value T) bool
-// func (c *Cache) Get(key string) (T, bool)
-// func (c *Cache) GetAll() []T
-// func (c *Cache) Remove(key string)
-// func (c *Cache) AddWithTtl(key string, value T, ttl time.Duration) bool
-// func (c *Cache) GetTtl(key string) (time.Duration, bool)
-// func (c *Cache) SetTtl(key string, ttl *time.Time) bool
-
 service Storage {
     rpc Add (KeyValue) returns (Empty) {}
-    rpc Get (Key) returns (T) {}
-    rpc GetAll (Empty) returns (stream T) {}
-    rpc Remove (Key) returns (Empty) {}
     rpc AddWithTtl (KeyValueTtl) returns (Empty) {}
-    rpc GetTtl (Key) returns (TtlResponse) {}
+    rpc Value (Key) returns (T) {}
+    rpc ListAll (Empty) returns (stream T) {}
+    rpc Remove (Key) returns (Empty) {}
+    rpc TimeAlive (Key) returns (TtlResponse) {}
     rpc SetTtl (TtlRequest) returns (Empty) {}
 }
 

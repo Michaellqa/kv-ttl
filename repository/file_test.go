@@ -44,7 +44,7 @@ func TestCacheBackup(t *testing.T) {
 	// verify
 	time.Sleep(1200 * time.Millisecond)
 	newCache := kv.NewCache(kv.Configuration{Storage: fileStorage})
-	storedValues := newCache.GetAll()
+	storedValues := newCache.ListAll()
 
 	sort.Slice(values, func(i, j int) bool { return values[i].V > values[j].V })
 	sort.Slice(storedValues, func(i, j int) bool { return storedValues[i].V > storedValues[j].V })

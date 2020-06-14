@@ -11,11 +11,11 @@ const defaultCleanInterval = time.Second
 
 type Cache interface {
 	Add(key string, value T) bool
-	Get(key string) (T, bool)
-	GetAll() []T
+	Value(key string) (T, bool)
+	ListAll() []T
 	Remove(key string)
 	AddWithTtl(key string, value T, ttl time.Duration) bool
-	GetTtl(key string) (time.Duration, bool)
+	TimeAlive(key string) (time.Duration, bool)
 	SetTtl(key string, ttl *time.Time) bool
 }
 
@@ -115,17 +115,17 @@ func (c *cache) AddWithTtl(key string, value T, ttl time.Duration) bool {
 	return c.add(key, value, &expired)
 }
 
-// Get returns the value for a given key.
+// Value returns the value for a given key.
 // The boolean value indicates the existence of the key in the cache.
-func (c *cache) Get(key string) (T, bool) {
+func (c *cache) Value(key string) (T, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	value, ok := c.values[key]
 	return value.Content, ok
 }
 
-// GetAll returns the slice of all the values in cache.
-func (c *cache) GetAll() []T {
+// ListAll returns the slice of all the values in cache.
+func (c *cache) ListAll() []T {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	results := make([]T, 0, len(c.values))
@@ -142,10 +142,9 @@ func (c *cache) Remove(key string) {
 	delete(c.values, key)
 }
 
-// todo: rename
-// GetTtl returns the duration of how long ago the value was added to the cache.
+// TimeAlive returns the duration of how long the value has been in the cache.
 // The boolean value indicates the existence of the key in the cache.
-func (c *cache) GetTtl(key string) (time.Duration, bool) {
+func (c *cache) TimeAlive(key string) (time.Duration, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	value, ok := c.values[key]
