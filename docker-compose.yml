@@ -14,5 +14,14 @@ services:
   my-cache:
     build: .
     restart: on-failure
+    depends_on:
+      - db
     ports:
       - "80:80"
+    environment:
+      - STORAGE=pg
+      - PG_HOST=db
+      - PG_PORT=5432
+      - PG_USER=postgres
+      - PG_PWD=postgres
+      - PG_DB=cache_app

@@ -15,10 +15,10 @@ const (
 
 // cacheServer implements StorageServer interface. Maps cache methods to server methods.
 type cacheServer struct {
-	cache *kv.Cache
+	cache kv.Cache
 }
 
-func NewCacheServer(cache *kv.Cache) pb.StorageServer {
+func NewCacheServer(cache kv.Cache) pb.StorageServer {
 	return &cacheServer{cache: cache}
 }
 

@@ -7,12 +7,12 @@ type Storage interface {
 	Save(map[string]TtlBox) error
 }
 
-type NotImplementedStorage struct{}
+type UnimplementedStorage struct{}
 
-func (s *NotImplementedStorage) RestoreInto(*map[string]TtlBox) error {
+func (s *UnimplementedStorage) RestoreInto(*map[string]TtlBox) error {
 	return nil
 }
 
-func (s *NotImplementedStorage) Save(map[string]TtlBox) error {
+func (s *UnimplementedStorage) Save(map[string]TtlBox) error {
 	return nil
 }
