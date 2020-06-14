@@ -14,6 +14,7 @@ Supported functions:
 * get the time since key value pair was added
 * change ttl
 
+Note: the default sweep interval is 1 second, therefore value can stay in cache a little longer after its expiration date until the next run of the cleaner.
 
 ## Quick start
 

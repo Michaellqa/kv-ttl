@@ -172,9 +172,6 @@ func (c *cache) SetTtl(key string, ttl *time.Time) bool {
 func (c *cache) add(key string, value T, ttl *time.Time) bool {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if _, ok := c.values[key]; ok {
-		return false
-	}
 	c.values[key] = TtlBox{
 		CreatedAt: time.Now(),
 		Expired:   ttl,

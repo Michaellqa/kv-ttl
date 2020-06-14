@@ -2,29 +2,36 @@ package repository
 
 import (
 	"fmt"
+	"io/ioutil"
 	"kv-ttl/kv"
+	"os"
 	"reflect"
+	"regexp"
 	"sort"
 	"testing"
 	"time"
 )
 
+// Removes all the previously created *.json files from the current directory.
+// Initiate a cache with backing up to file. Waits for scheduled backup happened.
+// Creates another cache instance based on the same file.
+// Sorts values received from the new cache and tests against the original data.
 func TestCacheBackup(t *testing.T) {
 	// clean up
-	//rx, _ := regexp.Compile(`.*\.json`)
-	//files, _ := ioutil.ReadDir(".")
-	//for _, f := range files {
-	//	if rx.MatchString(f.Name()) {
-	//		_ = os.Remove(f.Name())
-	//	}
-	//}
-
+	rx, _ := regexp.Compile(`.*\.json`)
+	files, _ := ioutil.ReadDir(".")
+	for _, f := range files {
+		if rx.MatchString(f.Name()) {
+			_ = os.Remove(f.Name())
+		}
+	}
+	// init
 	fileStorage := NewFileRepo("snap.json")
 	config := kv.Configuration{
 		BackupInterval: 1 * time.Second,
 		Storage:        fileStorage,
 	}
-
+	// insert
 	cache := kv.NewCache(config)
 	values := []kv.T{
 		{V: "one"},
@@ -34,16 +41,9 @@ func TestCacheBackup(t *testing.T) {
 	for i, v := range values {
 		cache.Add(fmt.Sprintf("%d", i), v)
 	}
-	go func() {
-		time.Sleep(5 * time.Second)
-		cache.AddWithTtl("4", kv.T{V: "four"}, 3*time.Second)
-	}()
-
-	time.Sleep(10500 * time.Millisecond)
-
-	newCache := kv.NewCache(kv.Configuration{
-		Storage: fileStorage,
-	})
+	// verify
+	time.Sleep(1200 * time.Millisecond)
+	newCache := kv.NewCache(kv.Configuration{Storage: fileStorage})
 	storedValues := newCache.GetAll()
 
 	sort.Slice(values, func(i, j int) bool { return values[i].V > values[j].V })
